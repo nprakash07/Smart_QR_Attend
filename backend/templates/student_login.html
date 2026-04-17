@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student Login – Smart Attend</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+     display:flex;justify-content:center;align-items:center;min-height:100vh}
+.card{background:#fff;padding:40px;width:360px;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);animation:up .6s ease}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+h2{font-size:22px;font-weight:700;color:#0f2027;text-align:center;margin-bottom:6px}
+.hint{text-align:center;font-size:12px;color:#6b7280;margin-bottom:22px}
+label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;margin-bottom:4px}
+input{width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;
+      outline:none;transition:.2s;margin-bottom:14px}
+input:focus{border-color:#2c5364;box-shadow:0 0 0 3px rgba(44,83,100,.12)}
+button{width:100%;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#0f2027,#2c5364);
+       color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;margin-top:4px}
+button:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(15,32,39,.35)}
+.error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;
+       padding:10px 14px;font-size:13px;margin-bottom:14px}
+.switch{display:block;text-align:center;margin-top:16px;color:#2c5364;font-size:13px;text-decoration:none}
+.switch:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>🎓 Student Login</h2>
+  <p class="hint">Use your registration number as email</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="POST">
+    <label>Email / Reg No.</label>
+    <input type="email" name="email" placeholder="2301109001@college.com" required autofocus>
+    <label>Password</label>
+    <input type="password" name="password" placeholder="••••••••" required>
+    <button type="submit">Sign In</button>
+  </form>
+  <a class="switch" href="/teacher-login">→ Switch to Teacher Login</a>
+</div>
+</body>
+</html>

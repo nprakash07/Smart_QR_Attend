@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Teacher Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#1f2937}
+.hdr{background:linear-gradient(135deg,#1e3c72,#2a5298);color:#fff;padding:16px 28px;display:flex;justify-content:space-between;align-items:center}
+.hdr h1{font-size:20px;font-weight:700}
+a.logout,button.logout{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:7px 16px;border-radius:7px;font-size:13px;cursor:pointer;text-decoration:none}
+.ctrl{background:#fff;padding:18px 24px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px;border-bottom:1px solid #e5e7eb}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
+input[type=date]{padding:9px 12px;border:1.5px solid #2a5298;border-radius:7px;font-size:14px;outline:none}
+.sbtns{display:flex;gap:5px}
+.sb{width:36px;height:36px;border:1.5px solid #d1d5db;background:#fff;border-radius:7px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+.sb.on{background:#2a5298;color:#fff;border-color:#2a5298}
+.btn{padding:10px 20px;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.btn-go{background:#16a34a;color:#fff}.btn-stop{background:#dc2626;color:#fff}
+.btn-exp{background:#0891b2;color:#fff}.btn-ref{background:#6b7280;color:#fff}
+.main{padding:20px 24px;max-width:1200px;margin:0 auto}
+.qr-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);display:none;margin-bottom:20px}
+.qr-inner{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+canvas{border-radius:10px;border:2px solid #e5e7eb}
+.live-info{flex:1;min-width:200px;display:flex;flex-direction:column;gap:12px}
+.badge-active{display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#15803d;padding:5px 12px;border-radius:50px;font-size:13px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:#16a34a;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.count-box{background:#f8fafc;border-radius:10px;padding:16px}
+.count-box p{font-size:13px;color:#6b7280;margin-bottom:6px}
+.count-num{font-size:28px;font-weight:800;color:#1e3c72}
+.prog{height:10px;background:#e5e7eb;border-radius:50px;overflow:hidden;margin-top:8px}
+.prog-fill{height:100%;background:#2a5298;border-radius:50px;transition:width .5s}
+.table-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.table-card h3{font-size:16px;font-weight:700;color:#1e3c72;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:400px}
+thead{background:#1e3c72;color:#fff}
+th{padding:11px 13px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;white-space:nowrap}
+td{padding:10px 13px;border-bottom:1px solid #f3f4f6;color:#374151}
+tr:last-child td{border:0}
+tr:hover td{background:#f0f4ff}
+.p-cell{background:#dcfce7!important;color:#15803d;font-weight:700;text-align:center;border-radius:4px}
+.a-cell{background:#fee2e2!important;color:#b91c1c;font-weight:700;text-align:center;border-radius:4px}
+.del-btn{background:none;border:1px solid #fca5a5;color:#dc2626;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;transition:.15s}
+.del-btn:hover{background:#dc2626;color:#fff}
+.col-del{background:none;border:none;color:#fca5a5;cursor:pointer;font-size:11px;margin-left:4px;padding:2px 4px;border-radius:3px;transition:.15s}
+.col-del:hover{color:#dc2626;background:rgba(220,38,38,.1)}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;justify-content:center;align-items:center}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:340px;max-width:92vw;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.modal h3{font-size:17px;font-weight:700;color:#1e3c72;margin-bottom:10px}
+.modal p{font-size:14px;color:#4b5563;margin-bottom:20px;line-height:1.5}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end}
+.btn-cancel{padding:9px 20px;border:1px solid #d1d5db;background:#fff;border-radius:7px;cursor:pointer;font-weight:600;font-size:13px}
+.btn-confirm{padding:9px 20px;border:none;background:#dc2626;color:#fff;border-radius:7px;cursor:pointer;font-weight:700;font-size:13px;transition:.2s}
+.btn-confirm:hover{background:#b91c1c}
+.no-data{text-align:center;padding:40px;color:#9ca3af;font-size:14px}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1>🏫 Teacher Dashboard</h1>
+  <a href="/logout" class="logout">Logout</a>
+</div>
+
+<div class="ctrl">
+  <div class="fg">
+    <label>Date</label>
+    <input type="date" id="dInput">
+  </div>
+  <div class="fg">
+    <label>Session</label>
+    <div class="sbtns">
+      <button class="sb on" id="s1" onclick="setSess(1)">1</button>
+      <button class="sb"    id="s2" onclick="setSess(2)">2</button>
+      <button class="sb"    id="s3" onclick="setSess(3)">3</button>
+    </div>
+  </div>
+  <button class="btn btn-go"  onclick="startAtt()">▶ Start</button>
+  <button class="btn btn-stop" onclick="stopAtt()">⏹ Stop</button>
+  <a href="/export-excel" class="btn btn-exp">↓ Export Excel</a>
+  <button class="btn btn-ref" onclick="loadTable()">↻ Refresh</button>
+</div>
+
+<div class="main">
+  <!-- Live QR card -->
+  <div class="qr-card" id="qrCard">
+    <div class="qr-inner">
+      <canvas id="qr"></canvas>
+      <div class="live-info">
+        <span class="badge-active"><span class="dot"></span>Session Active</span>
+        <div id="sessLabel" style="font-size:14px;color:#4b5563;font-weight:600"></div>
+        <div class="count-box">
+          <p>Students Marked Present</p>
+          <div class="count-num" id="countNum">0 / 0</div>
+          <div class="prog"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        </div>
+        <button class="btn btn-stop" style="align-self:flex-start" onclick="stopAtt()">⏹ Stop Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance table -->
+  <div class="table-card">
+    <h3>
+      Attendance Records
+      <button class="btn btn-ref" style="font-size:12px;padding:7px 14px" onclick="loadTable()">↻ Refresh</button>
+    </h3>
+    <div id="tableWrap" class="tbl-wrap">
+      <div class="no-data">Start a session to see attendance records here.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Confirm Delete</h3>
+    <p id="modalBody">Are you sure?</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" id="modalOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selSess=1, tokInt, countInt, tableInt;
+document.getElementById('dInput').value = new Date().toISOString().split('T')[0];
+
+function setSess(n){ selSess=n; [1,2,3].forEach(i=>document.getElementById('s'+i).classList.toggle('on',i===n)); }
+
+function startAtt(){
+  const date=document.getElementById('dInput').value;
+  if(!date){alert('Select a date first');return}
+  fetch('/start-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date,session_number:selSess})})
+  .then(r=>r.json()).then(()=>{
+    document.getElementById('qrCard').style.display='block';
+    document.getElementById('sessLabel').textContent=date+' — Session '+selSess;
+    clearInts(); fetchToken(); fetchCount(); loadTable();
+    tokInt=setInterval(fetchToken,15000); countInt=setInterval(fetchCount,3000); tableInt=setInterval(loadTable,10000);
+  });
+}
+
+function stopAtt(){
+  fetch('/stop-session',{method:'POST'}).then(()=>{
+    clearInts(); document.getElementById('qrCard').style.display='none'; loadTable();
+  });
+}
+
+function clearInts(){ clearInterval(tokInt); clearInterval(countInt); clearInterval(tableInt); }
+
+function fetchToken(){
+  fetch('/current-token').then(r=>r.json()).then(d=>{
+    if(d.session_id&&d.token){
+      QRCode.toCanvas(document.getElementById('qr'),JSON.stringify(d),{width:220,margin:2,color:{dark:'#1e3c72',light:'#ffffff'}});
+    }
+  });
+}
+
+function fetchCount(){
+  fetch('/attendance-count').then(r=>r.json()).then(d=>{
+    const pct=d.total?Math.round(d.marked/d.total*100):0;
+    document.getElementById('countNum').textContent=d.marked+' / '+d.total;
+    document.getElementById('progFill').style.width=pct+'%';
+  });
+}
+
+function loadTable(){
+  fetch('/get-attendance-table').then(r=>r.json()).then(data=>{
+    const w=document.getElementById('tableWrap');
+    if(!data.rows||!data.rows.length){w.innerHTML='<div class="no-data">No records yet. Start a session first.</div>';return;}
+    let h='<table><thead><tr><th>SL</th><th>Reg No.</th><th>Name</th>';
+    data.columns.forEach(col=>{
+      const [dt,s]=col.split('_'); const sn=parseInt(s.replace('S',''));
+      h+=`<th>${dt}<br><small>${s}</small><button class="col-del" onclick="delCol('${dt}',${sn},'${dt} ${s}')">🗑</button></th>`;
+    });
+    h+='<th style="background:#7f1d1d;width:80px">Delete</th></tr></thead><tbody>';
+    data.rows.forEach(row=>{
+      h+=`<tr><td style="color:#9ca3af;font-size:12px">${row.sl}</td><td style="font-family:monospace;font-weight:700">${row.reg_no}</td><td>${row.name}</td>`;
+      data.columns.forEach(col=>{
+        const [dt,s]=col.split('_'); const sn=parseInt(s.replace('S',''));
+        const v=row[col]||'–'; const cls=v==='P'?'p-cell':v==='A'?'a-cell':'';
+        h+=`<td class="${cls}">${v}${(v==='P'||v==='A')?`<button class="col-del" onclick="delCell(${row.id},'${dt}',${sn},'${row.reg_no} ${dt} ${s}')" style="margin-left:4px">✕</button>`:''}  </td>`;
+      });
+      h+=`<td><button class="del-btn" onclick="delRow(${row.id},'${row.name}')">🗑 All</button></td></tr>`;
+    });
+    h+='</tbody></table>';
+    w.innerHTML=h;
+  });
+}
+
+function openModal(title,body,fn){ document.getElementById('modalTitle').textContent=title; document.getElementById('modalBody').textContent=body; document.getElementById('modalOk').onclick=fn; document.getElementById('modalBg').classList.add('show'); }
+function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+
+function delRow(id,name){ openModal('Delete All Records','Delete ALL attendance for '+name+'?',()=>{ fetch('/delete-attendance',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_id:id})}).then(()=>{closeModal();loadTable()}); }); }
+function delCell(id,date,sn,label){ openModal('Delete Entry','Delete attendance for '+label+'?',()=>{ fetch('/delete-attendance',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_id:id,date,session_number:sn})}).then(()=>{closeModal();loadTable()}); }); }
+function delCol(date,sn,label){ openModal('Delete Session Column','Delete ALL records for '+label+'?',()=>{ fetch('/delete-attendance-session',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({date,session_number:sn})}).then(()=>{closeModal();loadTable()}); }); }
+
+loadTable();
+</script>
+</body>
+</html>

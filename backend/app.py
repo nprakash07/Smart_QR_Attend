@@ -10,19 +10,22 @@ from routes.student  import student_bp
 
 
 def ensure_database():
-    """Create database, tables, fix unique key, and seed demo data."""
-    # Create DB if not exists
-    cfg = {k: v for k, v in DB_CONFIG.items() if k != "database"}
-    try:
-        con = mysql.connector.connect(**cfg)
-        cur = con.cursor()
-        cur.execute(
-            f"CREATE DATABASE IF NOT EXISTS `{DB_CONFIG['database']}` "
-            f"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
-        )
-        con.commit(); cur.close(); con.close()
-    except Exception as e:
-        print(f"⚠  Could not create DB: {e}")
+    """Create tables and seed demo data. DB itself must already exist (Aiven pre-creates it)."""
+    import os
+    is_local = os.getenv("DB_HOST", "localhost") == "localhost"
+    if is_local:
+        # On local dev only: try to create the database if it doesn't exist
+        cfg = {k: v for k, v in DB_CONFIG.items() if k != "database"}
+        try:
+            con = mysql.connector.connect(**cfg)
+            cur = con.cursor()
+            cur.execute(
+                f"CREATE DATABASE IF NOT EXISTS `{DB_CONFIG['database']}` "
+                f"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+            )
+            con.commit(); cur.close(); con.close()
+        except Exception as e:
+            print(f"⚠  Could not create DB: {e}")
 
     con = mysql.connector.connect(**DB_CONFIG)
     cur = con.cursor()

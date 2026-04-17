@@ -5,6 +5,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from flask import (Blueprint, jsonify, redirect, render_template,
                    request, send_file, session, url_for)
 import db.queries as q
+from auth import make_teacher_token, get_teacher_id
 
 teacher_bp = Blueprint("teacher", __name__)
 
@@ -34,7 +35,7 @@ def teacher_login_json():
         name = t["email"].split("@")[0].replace(".", " ").title()
         return jsonify({
             "user" : {"id": t["id"], "name": name, "email": t["email"], "role": "teacher"},
-            "token": "flask-session"
+            "token": make_teacher_token(t["id"])   # HMAC token — works cross-domain
         })
     return jsonify({"error": "Invalid credentials"}), 401
 
@@ -110,7 +111,7 @@ def attendance_count():
 # ── Attendance table ──────────────────────────────────────────
 @teacher_bp.route("/get-attendance-table")
 def get_attendance_table():
-    if "teacher" not in session: return jsonify({"error": "Unauthorized"}), 401
+    if not get_teacher_id(): return jsonify({"error": "Unauthorized"}), 401
     subject  = request.args.get("subject")
     semester = request.args.get("semester")
     return jsonify(q.get_attendance_table(subject, semester))
@@ -120,7 +121,7 @@ def get_attendance_table():
 @teacher_bp.route("/delete-attendance", methods=["DELETE", "OPTIONS"])
 def delete_attendance():
     if request.method == "OPTIONS": return "", 204
-    if "teacher" not in session: return jsonify({"error": "Unauthorized"}), 401
+    if not get_teacher_id(): return jsonify({"error": "Unauthorized"}), 401
     data = request.json or {}
     sid  = data.get("student_id")
     if not sid: return jsonify({"error": "student_id required"}), 400
@@ -133,7 +134,7 @@ def delete_attendance():
 @teacher_bp.route("/delete-attendance-session", methods=["DELETE", "OPTIONS"])
 def delete_attendance_session():
     if request.method == "OPTIONS": return "", 204
-    if "teacher" not in session: return jsonify({"error": "Unauthorized"}), 401
+    if not get_teacher_id(): return jsonify({"error": "Unauthorized"}), 401
     data = request.json or {}
     q.delete_entire_date_session(data.get("date"), int(data.get("session_number", 1)))
     return jsonify({"status": "deleted"})
@@ -142,7 +143,7 @@ def delete_attendance_session():
 # ── Export Excel ──────────────────────────────────────────────
 @teacher_bp.route("/export-excel")
 def export_excel():
-    if "teacher" not in session: return redirect(url_for("teacher.teacher_login"))
+    if not get_teacher_id(): return redirect(url_for("teacher.teacher_login"))
     subject  = request.args.get("subject")
     semester = request.args.get("semester")
     data     = q.get_attendance_table(subject, semester)

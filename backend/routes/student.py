@@ -2,6 +2,7 @@ import time
 from flask import (Blueprint, jsonify, redirect, render_template,
                    request, session, url_for)
 import db.queries as q
+from auth import make_student_token, get_student_id
 
 student_bp = Blueprint("student", __name__)
 
@@ -33,7 +34,7 @@ def student_login_json():
         return jsonify({
             "user" : {"id": s["id"], "name": s["name"], "email": s["email"],
                       "role": "student", "reg_no": s["reg_no"]},
-            "token": "flask-session"
+            "token": make_student_token(s["id"])   # HMAC token — works cross-domain
         })
     return jsonify({"error": "Invalid credentials"}), 401
 
@@ -49,7 +50,7 @@ def student_dashboard():
 def mark_attendance():
     if request.method == "OPTIONS": return "", 204
 
-    sid = session.get("student_id")
+    sid = get_student_id()   # token-based — no cookies needed
     if not sid: return jsonify({"error": "Not logged in"}), 401
 
     data = request.json or {}
@@ -82,13 +83,17 @@ def mark_attendance():
         return jsonify({"error": "Already marked for this session"}), 400
 
     q.mark_student_present(sid, date_str, sess_num, subject, semester)
-    return jsonify({"message": f"✅ Attendance marked! ({session.get('reg_no', '')})"})
+    # Get reg_no for display
+    student = q.get_student_by_id(sid)
+    reg = student["reg_no"] if student else str(sid)
+    return jsonify({"message": f"✅ Attendance marked! ({reg})"})
 
 
 # ── Student's own attendance ──────────────────────────────────
 @student_bp.route("/my-attendance")
 def my_attendance():
-    if "student" not in session: return jsonify({"error": "Unauthorized"}), 401
+    sid = get_student_id()
+    if not sid: return jsonify({"error": "Unauthorized"}), 401
     return jsonify(q.get_attendance_table())
 
 

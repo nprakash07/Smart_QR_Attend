@@ -18,6 +18,11 @@ def get_student_by_email(email):
     r.execute("SELECT * FROM students WHERE email=%s", (email,))
     row = r.fetchone(); r.close(); c.close(); return row
 
+def get_student_by_id(student_id):
+    c = get_connection(); r = c.cursor(dictionary=True)
+    r.execute("SELECT * FROM students WHERE id=%s", (student_id,))
+    row = r.fetchone(); r.close(); c.close(); return row
+
 
 # ── Attendance: write ─────────────────────────────────────────
 def init_attendance_for_session(date_str, sess_num, subject, semester):

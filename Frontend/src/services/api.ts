@@ -1,13 +1,33 @@
 // If VITE_API_URL is set (in Vercel), it uses that. Otherwise, defaults to /api for local dev.
 const B = import.meta.env.VITE_API_URL || '/api'
 
+/** Read stored token + user id and return auth headers for every request. */
+function getAuthHeaders(): HeadersInit {
+  try {
+    const token   = localStorage.getItem('sa_token')
+    const userStr = localStorage.getItem('sa_user')
+    if (token && userStr) {
+      const user = JSON.parse(userStr)
+      return {
+        'Authorization': `Bearer ${token}`,
+        'X-User-ID': String(user.id),
+      }
+    }
+  } catch { /* ignore */ }
+  return {}
+}
+
 async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const url = `${B}${path}`
   let r: Response
   try {
     r = await fetch(url, {
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json', ...opts.headers },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),   // ← attach token on every request
+        ...opts.headers,
+      },
       ...opts,
     })
   } catch (networkErr: any) {

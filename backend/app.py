@@ -162,25 +162,30 @@ app.register_blueprint(student_bp)
 
 
 # ── CORS ──────────────────────────────────────────────────────
-ALLOWED = [
+# Allow frontend origins: localhost + any Vercel deployment of this project
+ALLOWED_EXACT = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    FRONTEND_URL,          # set as env var in Vercel dashboard
+    FRONTEND_URL,
 ]
 
 @app.after_request
 def add_cors(response):
     origin = request.headers.get("Origin", "")
-    if origin in ALLOWED:
+    # Allow exact matches OR any *.vercel.app origin (handles preview deploys)
+    allowed = (origin in ALLOWED_EXACT) or origin.endswith(".vercel.app")
+    if allowed and origin:
         response.headers["Access-Control-Allow-Origin"]      = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Methods"]     = "GET,POST,DELETE,OPTIONS"
-        response.headers["Access-Control-Allow-Headers"]     = "Content-Type"
+        # ← must include Authorization and X-User-ID since we now use token auth
+        response.headers["Access-Control-Allow-Headers"]     = "Content-Type,Authorization,X-User-ID"
     return response
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "OPTIONS"])
 def home():
+    if request.method == "OPTIONS": return "", 204
     return redirect(url_for("teacher.teacher_login"))
 
 

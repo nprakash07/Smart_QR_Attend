@@ -94,7 +94,8 @@ def mark_attendance():
 def my_attendance():
     sid = get_student_id()
     if not sid: return jsonify({"error": "Unauthorized"}), 401
-    return jsonify(q.get_attendance_table())
+    # Pass student_id so only this student's rows are returned
+    return jsonify(q.get_my_attendance(sid))
 
 
 @student_bp.route("/logout")

@@ -99,6 +99,36 @@ def get_attendance_table(subject=None, semester=None):
         rows.append(row)
     return {"columns": col_keys, "rows": rows}
 
+def get_my_attendance(student_id):
+    """Return attendance records for a single student."""
+    c = get_connection(); r = c.cursor(dictionary=True)
+    r.execute(
+        "SELECT DISTINCT date,session_number,subject,semester FROM attendance "
+        "WHERE student_id=%s ORDER BY date,session_number", (student_id,)
+    )
+    combos = r.fetchall()
+
+    r.execute("SELECT id,reg_no,name FROM students WHERE id=%s", (student_id,))
+    students = r.fetchall()
+
+    r.execute(
+        "SELECT student_id,CAST(date AS CHAR) AS date,session_number,status "
+        "FROM attendance WHERE student_id=%s", (student_id,)
+    )
+    raw = r.fetchall()
+    r.close(); c.close()
+
+    att_map  = {(x["student_id"],x["date"],x["session_number"]):x["status"] for x in raw}
+    col_keys = [f"{str(cb['date'])}_S{cb['session_number']}" for cb in combos]
+    rows = []
+    for i, s in enumerate(students, 1):
+        row = {"sl":i,"id":s["id"],"reg_no":s["reg_no"],"name":s["name"]}
+        for cb in combos:
+            row[f"{str(cb['date'])}_S{cb['session_number']}"] = att_map.get(
+                (s["id"], str(cb["date"]), cb["session_number"]), "–")
+        rows.append(row)
+    return {"columns": col_keys, "rows": rows}
+
 def count_marked(date_str, sess_num, subject, semester):
     c = get_connection(); r = c.cursor()
     r.execute(

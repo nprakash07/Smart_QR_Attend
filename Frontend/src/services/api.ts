@@ -2,12 +2,27 @@
 const B = import.meta.env.VITE_API_URL || '/api'
 
 async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const r = await fetch(`${B}${path}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...opts.headers },
-    ...opts,
-  })
-  const d = await r.json()
+  const url = `${B}${path}`
+  let r: Response
+  try {
+    r = await fetch(url, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', ...opts.headers },
+      ...opts,
+    })
+  } catch (networkErr: any) {
+    throw new Error(`Network error calling ${url}: ${networkErr.message}`)
+  }
+
+  // Try to parse as JSON; if it fails, show the raw response for debugging
+  let d: any
+  try {
+    d = await r.json()
+  } catch {
+    const text = await r.text().catch(() => '(unreadable)')
+    throw new Error(`Server returned non-JSON (status ${r.status}) from ${url}. Response: ${text.slice(0, 200)}`)
+  }
+
   if (!r.ok) throw new Error((d as any).error || 'Request failed')
   return d as T
 }

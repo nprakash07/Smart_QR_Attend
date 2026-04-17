@@ -53,13 +53,26 @@ def get_student_id() -> int | None:
 
 
 def get_teacher_id() -> int | None:
-    """Return verified teacher_id from token header, or Flask session as fallback."""
+    """Return verified teacher_id from token header, query param, or Flask session fallback."""
+    # 1. Try Authorization header (AJAX requests)
     token = _get_bearer_token()
-    if token:
-        uid = _get_user_id_from_header()
-        if uid:
-            expected = _make_token("teacher", uid)
-            if hmac.compare_digest(expected, token):
-                return uid
-    # Fallback for local dev where cookies still work
+    uid   = _get_user_id_from_header()
+    if token and uid:
+        expected = _make_token("teacher", uid)
+        if hmac.compare_digest(expected, token):
+            return uid
+
+    # 2. Try query params (browser direct navigation — used by export-excel link)
+    token_qp  = request.args.get("token", "")
+    uid_qp    = request.args.get("user_id", "")
+    if token_qp and uid_qp:
+        try:
+            uid_int  = int(uid_qp)
+            expected = _make_token("teacher", uid_int)
+            if hmac.compare_digest(expected, token_qp):
+                return uid_int
+        except (ValueError, TypeError):
+            pass
+
+    # 3. Fallback for local dev where cookies still work
     return session.get("teacher_id")

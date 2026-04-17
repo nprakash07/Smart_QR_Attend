@@ -90,5 +90,15 @@ export const exportUrl = (subject?: string, semester?: string) => {
   const p = new URLSearchParams()
   if (subject)  p.set('subject',  subject)
   if (semester) p.set('semester', semester)
+  // Pass token + user_id as query params because <a href> doesn't send headers
+  try {
+    const token   = localStorage.getItem('sa_token')
+    const userStr = localStorage.getItem('sa_user')
+    if (token && userStr) {
+      const user = JSON.parse(userStr)
+      p.set('token',   token)
+      p.set('user_id', String(user.id))
+    }
+  } catch { /* ignore */ }
   return `${B}/export-excel${p.toString() ? '?'+p.toString() : ''}`
 }

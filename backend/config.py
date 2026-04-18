@@ -18,5 +18,7 @@ DB_CONFIG = {
     "ssl_disabled": _is_local,  # False on Vercel = SSL ON; True locally = SSL OFF
 }
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
-SECRET_KEY = os.getenv("SECRET_KEY", "smartattend_secret_2024")
+FRONTEND_URL   = os.getenv("FRONTEND_URL",   "http://localhost:5173")
+SECRET_KEY     = os.getenv("SECRET_KEY",     "smartattend_secret_2024")
+ADMIN_EMAIL    = os.getenv("ADMIN_EMAIL",    "admin@college.com")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin1234")

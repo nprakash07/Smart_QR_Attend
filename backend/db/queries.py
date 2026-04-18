@@ -235,3 +235,40 @@ def stop_db_session():
     c = get_connection(); r = c.cursor()
     r.execute("UPDATE live_sessions SET is_active=0 WHERE is_active=1")
     c.commit(); r.close(); c.close()
+
+
+# ── Admin helpers ─────────────────────────────────────────────
+def get_all_teachers():
+    c = get_connection(); r = c.cursor(dictionary=True)
+    r.execute("SELECT id, email FROM teachers ORDER BY id")
+    rows = r.fetchall(); r.close(); c.close()
+    return rows
+
+def create_teacher(email, password):
+    c = get_connection(); r = c.cursor()
+    r.execute("INSERT INTO teachers (email, password) VALUES (%s, %s)", (email, password))
+    c.commit(); r.close(); c.close()
+
+def delete_teacher(teacher_id):
+    c = get_connection(); r = c.cursor()
+    r.execute("DELETE FROM teachers WHERE id=%s", (teacher_id,))
+    c.commit(); r.close(); c.close()
+
+def get_all_students():
+    c = get_connection(); r = c.cursor(dictionary=True)
+    r.execute("SELECT id, name, email, reg_no FROM students ORDER BY reg_no")
+    rows = r.fetchall(); r.close(); c.close()
+    return rows
+
+def create_student(name, email, reg_no, password):
+    c = get_connection(); r = c.cursor()
+    r.execute(
+        "INSERT INTO students (name, email, reg_no, password) VALUES (%s, %s, %s, %s)",
+        (name, email, reg_no, password)
+    )
+    c.commit(); r.close(); c.close()
+
+def delete_student(student_id):
+    c = get_connection(); r = c.cursor()
+    r.execute("DELETE FROM students WHERE id=%s", (student_id,))
+    c.commit(); r.close(); c.close()

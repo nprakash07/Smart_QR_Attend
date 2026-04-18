@@ -102,3 +102,26 @@ export const exportUrl = (subject?: string, semester?: string) => {
   } catch { /* ignore */ }
   return `${B}/export-excel${p.toString() ? '?'+p.toString() : ''}`
 }
+
+// ── Admin API ──────────────────────────────────────────────────
+export const adminLogin = (email: string, password: string) =>
+  req<{ user: any; token: string }>('/admin-login-json', { method: 'POST', body: JSON.stringify({ email, password }) })
+
+export const adminGetTeachers = () =>
+  req<{ id: number; email: string }[]>('/admin/teachers')
+
+export const adminCreateTeacher = (email: string, password: string) =>
+  req<{ status: string }>('/admin/teachers', { method: 'POST', body: JSON.stringify({ email, password }) })
+
+export const adminDeleteTeacher = (id: number) =>
+  req<{ status: string }>(`/admin/teachers/${id}`, { method: 'DELETE' })
+
+export const adminGetStudents = () =>
+  req<{ id: number; name: string; email: string; reg_no: string }[]>('/admin/students')
+
+export const adminCreateStudent = (name: string, email: string, reg_no: string, password: string) =>
+  req<{ status: string }>('/admin/students', { method: 'POST', body: JSON.stringify({ name, email, reg_no, password }) })
+
+export const adminDeleteStudent = (id: number) =>
+  req<{ status: string }>(`/admin/students/${id}`, { method: 'DELETE' })
+

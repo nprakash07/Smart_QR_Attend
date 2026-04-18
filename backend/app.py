@@ -7,6 +7,7 @@ from flask import Flask, redirect, url_for, request
 from config import SECRET_KEY, DB_CONFIG, FRONTEND_URL
 from routes.teacher import teacher_bp
 from routes.student  import student_bp
+from routes.admin    import admin_bp
 
 
 def ensure_database():
@@ -159,6 +160,7 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 # Register blueprints
 app.register_blueprint(teacher_bp)
 app.register_blueprint(student_bp)
+app.register_blueprint(admin_bp)
 
 
 # ── CORS ──────────────────────────────────────────────────────

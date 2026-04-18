@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext'
 import Login            from '@/pages/Login'
 import TeacherDashboard from '@/features/dashboards/TeacherDashboard'
 import StudentDashboard from '@/features/dashboards/StudentDashboard'
+import AdminDashboard   from '@/features/dashboards/AdminDashboard'
 import ProtectedRoute   from '@/features/components/ProtectedRoute'
 
 export default function App() {
@@ -33,6 +34,14 @@ export default function App() {
         element={
           <ProtectedRoute role="student">
             <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin-dashboard"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
           </ProtectedRoute>
         }
       />
